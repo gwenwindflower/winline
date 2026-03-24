@@ -67,7 +67,7 @@ Single-file, all phases integrated:
 | model | mauve | stdin context | No subprocess |
 | directory | peach | stdin context | Workspace root basename only |
 | git | yellow | `git branch`, `git status --porcelain` | Status indicators: `! + ✘ ?`; `colorized_status` option |
-| worktrees | pink | `git config --get-regexp worktrunk.state.*.marker` | Count badge `  N` of sessions waiting on input (`💬`); hidden when 0; no `wt` binary needed |
+| worktrees | pink | `git config --get-regexp worktrunk.state.*.marker` | Count badge `N` of sessions waiting on input (`💬`); hidden when 0; no `wt` binary needed |
 | languages | green | `starship module <name> -p <dir>` | Starship is a hard dependency — no fallback |
 | context | blue/maroon | stdin context | Block bar `████░░ 45%`, switches color at warn threshold |
 
