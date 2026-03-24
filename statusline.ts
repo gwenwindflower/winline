@@ -614,6 +614,7 @@ async function buildSegmentSlots(
   config: StatuslineConfig,
   env: Record<string, string>,
   explainData: ExplainData | null,
+  backgroundSegments: Set<string>,
 ): Promise<Map<string, SegmentSlot>> {
   const slots = new Map<string, SegmentSlot>();
   const ttlMs = config.general.cache_ttl_seconds * 1000;
@@ -669,10 +670,10 @@ async function buildSegmentSlots(
     }
 
     // colorized_status: emit inline ANSI for status indicators when enabled.
-    // This is only meaningful in foreground-style rows (where the row renderer
-    // won't be overriding the fg color of the whole segment), but we apply it
-    // regardless and let the terminal do the right thing.
-    if (gitCfg.colorized_status) {
+    // Suppressed on background-style rows — the row renderer sets a solid colored
+    // bg for the whole segment, so inline fg colors produce unreadable text against
+    // the wrong background. colorized_status is only meaningful on foreground-style rows.
+    if (gitCfg.colorized_status && !backgroundSegments.has("git")) {
       // Status indicator colors (hardcoded against Catppuccin Frappe, same palette)
       const STATUS_COLORS: Record<string, [number, number, number]> = {
         modified: [229, 200, 144], // yellow
@@ -797,8 +798,18 @@ async function buildStatusline(
     }
     : null;
 
+  // Build set of segment names that appear in background-style rows.
+  // Used to suppress inline ANSI colorization (e.g. git colorized_status) where
+  // the row renderer will be overriding fg color for the whole segment anyway,
+  // causing broken colors against the colored background.
+  const backgroundSegments = new Set<string>(
+    config.layout.rows
+      .filter((r) => r.style === "background")
+      .flatMap((r) => r.segments),
+  );
+
   // Build all segment content (data fetching happens here)
-  const slots = await buildSegmentSlots(context, config, env, explainData);
+  const slots = await buildSegmentSlots(context, config, env, explainData, backgroundSegments);
 
   // Validate row count
   const rows = config.layout.rows;
