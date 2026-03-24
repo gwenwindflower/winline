@@ -217,7 +217,7 @@ const SEPARATOR_GLYPHS: Record<
   { mid: string; left_cap: string; right_cap: string }
 > = {
   powerline: { mid: "", left_cap: "", right_cap: "" },
-  slant: { mid: "", left_cap: "", right_cap: "" },
+  slant: { mid: "", left_cap: "", right_cap: "" },
   round: { mid: "", left_cap: "", right_cap: "" },
   straight: { mid: "│", left_cap: "│", right_cap: "│" },
   none: { mid: " ", left_cap: "", right_cap: "" },
