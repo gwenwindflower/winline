@@ -1,20 +1,31 @@
-# winline
+# ✨📼  winline
 
 A powerline statusline for [Claude Code](https://claude.ai/code), rendered in your terminal using the [Catppuccin Frappe](https://github.com/catppuccin/catppuccin) palette. Reads session context from Claude Code's hook system and outputs a formatted, multi-row statusline to stdout.
+
+## A few possible styles
+
+<img width="322" height="61" alt="Screenshot 2026-03-23 at 9 47 38 PM" src="https://github.com/user-attachments/assets/8096f08a-9395-48ae-9188-1aab952861c9" />
+<br>
+<img width="562" height="56" alt="Screenshot 2026-03-23 at 10 03 24 PM" src="https://github.com/user-attachments/assets/dd3aeba3-81a8-4d67-bc4a-c7c25ed094f1" />
+
+<img width="557" height="65" alt="Screenshot 2026-03-23 at 10 08 55 PM" src="https://github.com/user-attachments/assets/126318f1-45da-4c95-a3e4-29f0dffafe45" />
+
 
 ## Prerequisites
 
 - **[Bun](https://bun.sh)** — build toolchain and runtime
 - **[Starship](https://starship.rs)** — required for the `languages` segment
 - **[Nerd Fonts](https://www.nerdfonts.com)** — required for powerline glyphs and language icons
-- **[worktrunk](https://github.com/anomalyco/worktrunk)** — optional, enables the `worktrees` segment
+- **[worktrunk](https://github.com/max-sixty/worktrunk)** — optional, enables the `worktrees` segment
 
 ## Installation
+
+For now this requires cloning locally and building into your `~/.local/bin`, but a Homebrew install is coming shortly.
 
 Clone the repo and install the binary to `~/.local/bin`:
 
 ```bash
-git clone https://github.com/anomalyco/winline
+git clone https://github.com/gwenwindflower/winline
 cd winline
 bun install
 bun run install:local
@@ -124,7 +135,7 @@ Shows a block bar and percentage of context window used. Color transitions to `w
 
 ### Palette
 
-All colors are defined in the `[palette]` table as `[R, G, B]` triplets. Defaults are Catppuccin Frappe. Override individual entries without needing to redeclare the full table:
+All colors are defined in the `[palette]` table as `[R, G, B]` triplets. Defaults are Catppuccin Frappe. Full theme support coming shortly. Override individual entries without needing to redeclare the full table:
 
 ```toml
 [palette]
@@ -132,8 +143,6 @@ mauve  = [202, 158, 230]   # #CA9EE6 — Catppuccin Frappe default
 peach  = [239, 159, 118]   # #EF9F76
 # ... etc
 ```
-
-To use a different Catppuccin variant (Latte, Macchiato, Mocha), replace the RGB values here. The Catppuccin palette reference is linked in the `statusline.toml` comments.
 
 ### Cache TTL
 
@@ -171,3 +180,4 @@ winline --print
 
 - [ ] Add output testing suite
 - [ ] Add Homebrew tab for binary install
+- [ ] Add theme selection and auto-detect theme option
