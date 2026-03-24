@@ -10,7 +10,6 @@ A powerline statusline for [Claude Code](https://claude.ai/code), rendered in yo
 
 <img width="557" height="65" alt="Screenshot 2026-03-23 at 10 08 55 PM" src="https://github.com/user-attachments/assets/126318f1-45da-4c95-a3e4-29f0dffafe45" />
 
-
 ## Prerequisites
 
 - **[Bun](https://bun.sh)** — build toolchain and runtime
@@ -80,9 +79,9 @@ segments  = ["git", "worktrees", "context"]
 
 | Value | Glyph | Description |
 | --- | --- | --- |
-| `powerline` |  | Filled triangle arrows (classic powerline) |
-| `slant` |  | Thin diagonal slashes |
-| `round` |  | Rounded pill endcaps |
+| `powerline` |  | Filled triangle arrows (classic powerline) |
+| `slant` |  | Thin diagonal slashes |
+| `round` |  | Rounded pill endcaps |
 | `straight` | │ | Vertical bar |
 | `none` | — | Space only, no glyph |
 
