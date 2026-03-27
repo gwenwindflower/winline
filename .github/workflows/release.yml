@@ -64,7 +64,7 @@ jobs:
           commit_owner: github-actions[bot]
           commit_email: github-actions[bot]@users.noreply.github.com
           install: 'bin.install "winline"'
-          test: 'assert_match("usage", shell_output("#{bin}/winline --help 2>&1", 1))'
+          test: 'assert_match("USAGE", shell_output("#{bin}/winline --help"))'
           target_darwin_amd64: true
           target_darwin_arm64: true
           target_linux_amd64: true
