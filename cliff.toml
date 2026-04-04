@@ -32,22 +32,23 @@ filter_unconventional = true
 require_conventional = true
 split_commits = false
 commit_parsers = [
-  { message = "^feat", group = "<!-- 0 -->✨ Features" },
+  { message = "^feat", group = "<!-- 0 -->✨ Features", default_scope = "General" },
   { message = "^fix", group = "<!-- 1 -->🐛 Bug Fixes" },
   { message = "^perf", group = "<!-- 2 -->🏎️ Performance" },
   { message = "^refactor", group = "<!-- 3 -->♻️ Refactor" },
   { message = "^test", group = "<!-- 5 -->🧪 Testing" },
-  { message = "^agent", group = "<!-- 6 -->🤖 Coding Agents" },
-  { message = "^doc", group = "<!-- 7 -->📚 Documentation", default_scope = "unscoped" },
+  { message = "^agent", group = "<!-- 6 -->🤖 Coding Agents", default_scope = "Config" },
+  { message = "^doc", group = "<!-- 7 -->📚 Documentation", default_scope = "Unscoped" },
   { message = "^build", group = "<!-- 8 -->🛠️ Build System" },
-  { message = "^ci", group = "<!-- 9 -->🚧 CI/CD" },
+  { message = "^ci", group = "<!-- 9 -->🚧 CI/CD", default_scope = "GitHub Actions" },
   { message = "^style", group = "<!-- 10 -->🎨 Style & Formatting" },
   { message = "^chore\\(release\\): prepare for", skip = true },
   { message = "^chore", group = "<!-- 11 -->🧰 Tooling & Tasks" },
   { body = ".*security", group = "<!-- 4 -->🛡️ Security" },
 ]
-filter_commits = false
-topo_order = false
+filter_commits = true
+fail_on_unmatched_commit = true
+topo_order = true
 sort_commits = "oldest"
 
 [bump]
