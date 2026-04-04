@@ -42,7 +42,7 @@ commit_parsers = [
   { message = "^build", group = "<!-- 8 -->🛠️ Build System" },
   { message = "^ci", group = "<!-- 9 -->🚧 CI/CD", default_scope = "GitHub Actions" },
   { message = "^style", group = "<!-- 10 -->🎨 Style & Formatting" },
-  { message = "^chore\\(release\\): prepare for", skip = true },
+  { message = "^chore\\(release\\): update changelog", skip = true },
   { message = "^chore", group = "<!-- 11 -->🧰 Tooling & Tasks" },
   { body = ".*security", group = "<!-- 4 -->🛡️ Security" },
 ]
@@ -53,3 +53,8 @@ sort_commits = "oldest"
 
 [bump]
 breaking_always_bump_major = false
+features_always_bump_minor = false
+
+[remote.github]
+owner = "gwenwindflower"
+repo = "winline"
