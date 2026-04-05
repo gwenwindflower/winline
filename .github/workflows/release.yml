@@ -11,7 +11,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - uses: oven-sh/setup-bun@v2
         with:
@@ -59,7 +59,7 @@ jobs:
         with:
           homebrew_owner: gwenwindflower
           homebrew_tap: homebrew-tap
-          formula_folder: Formulae
+          formula_folder: Formula
           github_token: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN }}
           commit_owner: github-actions[bot]
           commit_email: github-actions[bot]@users.noreply.github.com
@@ -71,4 +71,3 @@ jobs:
           target_linux_arm64: true
           update_readme_table: true
           skip_commit: false
-          debug: false

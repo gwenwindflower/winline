@@ -44,12 +44,6 @@ Make sure `~/.local/bin` is on your `PATH`. Then wire winline into Claude Code b
 
 That's it. Open a new Claude Code session and the statusline will appear.
 
-## Homebrew Tap WIP
-
-<!-- project_table_start -->
-TABLE HERE
-<!-- project_table_end -->
-
 ## Configuration
 
 winline reads `~/.claude/statusline.toml` on every render. The file is optional — all values have defaults. Copy the reference config to get started:
