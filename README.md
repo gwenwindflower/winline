@@ -10,18 +10,51 @@ A powerline statusline for [Claude Code](https://claude.ai/code), rendered in yo
 
 <img width="557" height="65" alt="Screenshot 2026-03-23 at 10 08 55 PM" src="https://github.com/user-attachments/assets/126318f1-45da-4c95-a3e4-29f0dffafe45" />
 
-## Prerequisites
+## Dependencies
 
-- **[Bun](https://bun.sh)** — build toolchain and runtime
 - **[Starship](https://starship.rs)** — required for the `languages` segment
 - **[Nerd Fonts](https://www.nerdfonts.com)** — required for powerline glyphs and language icons
+
+### Optional segments
+
 - **[worktrunk](https://github.com/max-sixty/worktrunk)** — optional, enables the `worktrees` segment
+
+### Development
+
+- **[Bun](https://bun.sh)** — build toolchain and runtime
 
 ## Installation
 
-For now this requires cloning locally and building into your `~/.local/bin`, but a Homebrew install is coming shortly.
+### Homebrew
 
-Clone the repo and install the binary to `~/.local/bin`:
+Currently only Homebrew is supported as a package manager for installation.
+
+```bash
+brew install g15r/tap/winline
+```
+
+Set Claude Code statusline command:
+
+```json
+{
+  "statusLine": {
+    "type": "command",
+    "command": "winline",
+    "padding": 0
+  }
+}
+
+```
+
+### Build from source
+
+1. Clone the repo
+2. Install dependencies with `bun install`
+3. Run the bun task `bun run install:local` to add the binary to `~/.local/bin` (make sure this is available in PATH)
+4. Update your Claude Code `settings.json` to use `winline` as the command for the statusline hook:
+5. (optional) run `winline config init` to generate a starter config at `~/.config/winline/config.toml` (or `$XDG_CONFIG_HOME/winline/config.toml` if $XDG_CONFIG_HOME is set)
+
+Install winline from source:
 
 ```bash
 git clone https://github.com/gwenwindflower/winline
@@ -30,7 +63,7 @@ bun install
 bun run install:local
 ```
 
-Make sure `~/.local/bin` is on your `PATH`. Then wire winline into Claude Code by adding this to your `~/.claude/settings.json`:
+Set Claude Code statusline command:
 
 ```json
 {
@@ -42,17 +75,21 @@ Make sure `~/.local/bin` is on your `PATH`. Then wire winline into Claude Code b
 }
 ```
 
-That's it. Open a new Claude Code session and the statusline will appear.
-
 ## Configuration
 
-winline reads `~/.claude/statusline.toml` on every render. The file is optional — all values have defaults. Copy the reference config to get started:
+winline reads its config from `$XDG_CONFIG_HOME/winline/config.toml`, falling back to `~/.config/winline/config.toml`. The file is optional — all values have defaults. Generate a starter config with:
 
 ```bash
-cp statusline.toml ~/.claude/statusline.toml
+winline config init
 ```
 
-The reference config is fully commented and shows every available option with its default value. The sections below summarize the key customization points.
+To see the resolved configuration (defaults merged with your overrides):
+
+```bash
+winline config
+```
+
+The generated config is fully commented and shows every available option with its default value. The sections below summarize the key customization points.
 
 ### Layout
 
@@ -82,8 +119,8 @@ segments  = ["git", "worktrees", "context"]
 | `powerline` |  | Filled triangle arrows (classic powerline) |
 | `slant` |  | Thin diagonal slashes |
 | `round` |  | Rounded pill endcaps |
-| `straight` | │ | Vertical bar |
-| `none` | — | Space only, no glyph |
+| `straight` | █ | Vertical bar |
+| `none` | — | No glyph for minimalist setups |
 
 ### Segments
 
@@ -94,7 +131,7 @@ Each segment has a `color` field and some have additional options. Any segment n
 | `model` | mauve | Active Claude model name |
 | `directory` | peach | Workspace root directory (basename only) |
 | `git` | yellow | Branch name + status indicators (`! + ✘ ?`) |
-| `worktrees` | pink | Other worktrees with session state badges |
+| `worktrees` | pink | Other worktrees with session state badges (opt-in) |
 | `languages` | green | Language icons and versions via Starship |
 | `context` | blue | Context window usage bar + percentage |
 
@@ -154,7 +191,11 @@ cache_ttl_seconds = 5   # default
 
 Increase this if the statusline feels slow. The stdin context (model, directory, context window) is always fresh — only subprocess-based segments are cached.
 
-## Diagnostics
+## Styling
+
+Use `winline -p/--print` to quickly preview your config's output with mock data. Sends hardcoded input to all available segments so you can test every potential segment.
+
+## Troubleshooting
 
 Two flags help when something looks wrong:
 
@@ -166,17 +207,16 @@ winline --capture
 winline --explain | jq .
 ```
 
-Use `--capture` in your `settings.json` command while iterating on config, then `--explain` to inspect what data each segment is working with. Captured input is saved to `~/.claude/statusline-input.json`.
+Use `--capture` in your `settings.json` command while iterating on config, then `--explain` to inspect what data each segment is working with. Captured input is saved alongside the config in the XDG config directory.
 
 ```bash
 # Preview the statusline without an active Claude session
 winline --print
 ```
 
-`--print` runs against the current directory using mock session data — all real detectors (git, languages, worktrees) fire normally. Useful for tuning layout and colors without opening Claude Code.
+## Roadmap
 
-## TODO
-
+- [x] Add Homebrew tab for binary install
 - [ ] Add output testing suite
-- [ ] Add Homebrew tab for binary install
-- [ ] Add theme selection and auto-detect theme option
+- [ ] Add theme selection beyond Catppuccin Frappe
+- [ ] Support multiple mock data sets for `--print`, to test different situations (e.g. maxxed out context window, dirty git status, etc.), and make these configurable (`print.data.<set name> = {...}`, `winline --print <set name>`)
