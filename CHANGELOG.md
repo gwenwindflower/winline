@@ -2,6 +2,48 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.2.0 - 2026-04-08
+
+### ✨ Features
+
+#### Config
+
+* add config command to manage proper config path by @gwenwindflower
+
+
+### 🧰 Tooling & Tasks
+
+#### Markdown
+
+* disable no-inline-html lint rule by @gwenwindflower
+
+
+### 🤖 Coding Agents
+
+#### Docs
+
+* update AGENTS.md with new config path and brew release by @gwenwindflower
+
+
+### 📚 Documentation
+
+#### License
+
+* add apache 2.0 license by @gwenwindflower
+
+
+#### Readme
+
+* update docs on config and brew install by @gwenwindflower
+
+
+### 🛠️ Build System
+
+#### Brew
+
+* update owner to g15r by @gwenwindflower
+
+
 ## 0.1.0 - 2026-04-05
 
 ### ✨ Features
