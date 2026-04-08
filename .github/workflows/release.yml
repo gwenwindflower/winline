@@ -33,7 +33,10 @@ jobs:
           for TARGET in darwin-arm64 darwin-amd64 linux-arm64 linux-amd64; do
             BINARY="dist/winline-${TARGET}"
             ARCHIVE="winline-${VERSION_CLEAN}-${TARGET}.tar.gz"
-            tar -czf "${ARCHIVE}" -C dist "winline-${TARGET}"
+            # Rename binary to 'winline' so it matches bin.install in the formula
+            cp "${BINARY}" dist/winline
+            tar -czf "${ARCHIVE}" -C dist winline
+            rm dist/winline
             echo "Created ${ARCHIVE}"
           done
 
@@ -57,14 +60,14 @@ jobs:
       - name: Release to Homebrew tap
         uses: Justintime50/homebrew-releaser@v3
         with:
-          homebrew_owner: gwenwindflower
+          homebrew_owner: g15r
           homebrew_tap: homebrew-tap
           formula_folder: Formula
           github_token: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN }}
           commit_owner: github-actions[bot]
           commit_email: github-actions[bot]@users.noreply.github.com
           install: 'bin.install "winline"'
-          test: 'assert_match("USAGE", shell_output("#{bin}/winline --help"))'
+          test: 'assert_match("winline", shell_output("#{bin}/winline --help"))'
           target_darwin_amd64: true
           target_darwin_arm64: true
           target_linux_amd64: true
