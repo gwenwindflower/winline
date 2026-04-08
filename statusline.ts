@@ -1,11 +1,11 @@
 #!/usr/bin/env bun
 /**
- * Claude Code statusline - Bun port of the Deno implementation
- * Catppuccin Frappe themed powerline statusline
- * Configured via ~/.claude/statusline.toml
+ * winline: the pretty and performant Claude Code statusline
+ * Highly-configurable, powered by Starship and Worktrunk
+ * Expects config at ~/.config/winline/config.toml
  */
 
-import { parse as parseToml } from "smol-toml";
+import { parse as parseToml, stringify as stringifyToml } from "smol-toml";
 import { join } from "node:path";
 import { createHash } from "node:crypto";
 
@@ -133,10 +133,10 @@ const DEFAULT_CONFIG: StatuslineConfig = {
   layout: {
     rows: [
       {
-        segments: ["model", "directory", "git", "worktrees", "languages", "context"],
+        segments: ["model", "directory", "git", "languages", "context"],
         style: "background",
         separator: "powerline",
-        first_separator: "powerline",
+        first_separator: "straight",
         last_separator: "powerline",
       },
     ],
@@ -172,12 +172,18 @@ const DEFAULT_CONFIG: StatuslineConfig = {
   },
 };
 
+function getConfigDir(): string {
+  return process.env.XDG_CONFIG_HOME
+    ? join(process.env.XDG_CONFIG_HOME, "winline")
+    : join(process.env.HOME ?? "~", ".config", "winline");
+}
+
+function getConfigPath(): string {
+  return join(getConfigDir(), "config.toml");
+}
+
 async function loadConfig(): Promise<StatuslineConfig> {
-  const configPath = join(
-    process.env.HOME ?? "~",
-    ".claude",
-    "statusline.toml",
-  );
+  const configPath = getConfigPath();
   const file = Bun.file(configPath);
   if (!(await file.exists())) return DEFAULT_CONFIG;
 
@@ -219,8 +225,8 @@ const SEPARATOR_GLYPHS: Record<
   powerline: { mid: "", left_cap: "", right_cap: "" },
   slant: { mid: "", left_cap: "", right_cap: "" },
   round: { mid: "", left_cap: "", right_cap: "" },
-  straight: { mid: "│", left_cap: "│", right_cap: "│" },
-  none: { mid: " ", left_cap: "", right_cap: "" },
+  straight: { mid: "", left_cap: "█", right_cap: "█" },
+  none: { mid: "", left_cap: "", right_cap: "" },
 };
 
 // ─── ANSI rendering ───────────────────────────────────────────────────────────
@@ -790,7 +796,7 @@ async function buildStatusline(
   const explainData: ExplainData | null = explain
     ? {
       context,
-      config_path: join(process.env.HOME ?? "~", ".claude", "statusline.toml"),
+      config_path: getConfigPath(),
       config,
       segments: {},
       cache: {},
@@ -844,13 +850,14 @@ async function buildStatusline(
 
 // ─── Entry point ──────────────────────────────────────────────────────────────
 
-const CAPTURE_PATH = join(process.env.HOME ?? "~", ".claude", "statusline-input.json");
+const CAPTURE_PATH = join(getConfigDir(), "last-input.json");
 
 const HELP_TEXT = `\
 winline — Claude Code powerline statusline renderer
 
 USAGE
   winline [FLAGS]
+  winline config [init]
   echo '<context JSON>' | winline
 
 FLAGS
@@ -858,17 +865,195 @@ FLAGS
                  Runs all real detectors (git, languages, etc.) without needing
                  an active Claude Code session. Fast visual iteration.
   -c, --capture  Drop-in replacement for the winline command in Claude Code
-                 settings. Saves the raw context JSON to
-                 ~/.claude/statusline-input.json, then renders normally.
-      --explain  Read the last captured context from ~/.claude/statusline-input.json
-                 and dump structured diagnostic JSON (segments, timings, config).
+                 settings. Saves the raw context JSON to the config directory,
+                 then renders normally.
+      --explain  Read the last captured context and dump structured diagnostic
+                 JSON (segments, timings, config).
                  Pipe to jq for readable output: winline --explain | jq .
   -h, --help     Print this help text and exit.
 
+COMMANDS
+  config         Print the resolved configuration (defaults merged with user
+                 overrides from config.toml). Output is valid TOML.
+  config init    Create a starter config.toml at the XDG config path.
+                 Will not overwrite an existing file.
+
 CONFIGURATION
-  ~/.claude/statusline.toml        — layout and segment options (optional)
-  ~/.claude/statusline-input.json  — last captured context (written by --capture)
+  Config file:   $XDG_CONFIG_HOME/winline/config.toml
+                 Falls back to ~/.config/winline/config.toml
 `;
+
+// ─── Reference config template ───────────────────────────────────────────────
+// Embedded so `config init` works from the compiled binary without needing the
+// repo's config.toml on disk.
+
+const REFERENCE_CONFIG = `\
+# Winline configuration
+# Location: $XDG_CONFIG_HOME/winline/config.toml (or ~/.config/winline/config.toml)
+#
+# All values shown are defaults. The file is optional — omitting it (or any
+# section) falls back to these defaults. Partial configs work: only override
+# what you want to change.
+
+# ─── General ──────────────────────────────────────────────────────────────────
+
+[general]
+# How long (in seconds) to reuse cached subprocess results before re-running.
+# Cached: git branch, git status, worktree markers, starship modules.
+# Not cached: stdin context JSON (always fresh), ANSI rendering (pure).
+cache_ttl_seconds = 5
+
+# ─── Layout ───────────────────────────────────────────────────────────────────
+# One to three rows. Each [[layout.rows]] entry defines one rendered line.
+# Segment names not present in any row are silently omitted.
+# Using more than 3 rows is a configuration error and renders an error segment.
+#
+# style:
+#   "background" — classic powerline: each segment gets a colored bg, dark text
+#   "foreground" — minimal: segments share the base bg; color is used as fg text
+#
+# separator: glyph used between adjacent segments
+# first_separator: glyph at the very start of the row (left edge)
+# last_separator:  glyph at the very end of the row (right edge)
+#
+# Separator values: "powerline" | "slant" | "round" | "straight" | "none"
+#   powerline —  /  (filled triangle arrows, classic powerline)
+#   slant     —  /  (thin diagonal slashes)
+#   round     —  /  (rounded pill endcaps)
+#   straight  — │ (vertical bar)
+#   none      — no separator glyph (space only / no end caps)
+
+[[layout.rows]]
+style           = "background"
+separator       = "powerline"
+first_separator = "powerline"
+last_separator  = "powerline"
+segments        = ["model", "directory", "git", "languages", "context"]
+
+# ─── Segments ─────────────────────────────────────────────────────────────────
+# Per-segment color and option overrides. Segments not included in any
+# layout.rows entry are still configurable here but will not be rendered.
+
+# ── Model ──────────────────────────────────────────────────────────────────────
+# Shows the active Claude model name (e.g. "Claude", "Sonnet", "Opus").
+# Sourced directly from the Claude Code context — no subprocess.
+
+[segments.model]
+color = "mauve"
+
+# ── Directory ─────────────────────────────────────────────────────────────────
+# Shows the workspace root directory name (basename only, not full path).
+# Sourced directly from the Claude Code context — no subprocess.
+
+[segments.directory]
+color = "peach"
+
+# ── Git ───────────────────────────────────────────────────────────────────────
+# Shows current branch name and status indicators:
+#   !  modified files     +  added files
+#   ✘  deleted files      ?  untracked files
+#
+# colorized_status: when true, each indicator is rendered in its own color
+# (yellow !, green +, red ✘, teal ?) instead of inheriting the segment color.
+# Most useful on "foreground"-style rows where the base bg is neutral.
+
+[segments.git]
+color             = "yellow"
+colorized_status  = false
+
+# ── Worktrees (opt-in) ───────────────────────────────────────────────────────
+# Shows a count badge of worktrees where a Claude session is waiting on input.
+# Requires worktrunk (wt) hooks to write git config markers.
+# To enable: add "worktrees" to a layout.rows segments list.
+
+[segments.worktrees]
+color = "pink"
+
+# ── Languages ─────────────────────────────────────────────────────────────────
+# Passes each module name to \`starship module <name> -p <project_dir>\` in
+# parallel and renders the icon + version for any that return output.
+# Starship is a hard dependency — if not in PATH, this segment renders empty.
+# Detection rules and icons match your starship.toml configuration exactly.
+#
+# To disable a language, remove it from the modules list.
+# To add a language, append the starship module name (e.g. "java", "swift").
+
+[segments.languages]
+color   = "green"
+modules = ["python", "nodejs", "bun", "deno", "golang", "rust", "ruby", "c"]
+
+# ── Context window ────────────────────────────────────────────────────────────
+# Shows cumulative token usage as a block bar + percentage.
+# Example: "███░░░░░░░ 30%"
+#
+# Color switches to warn_color once usage reaches warn_threshold percent.
+# To add a critical tier (e.g. red at 95%), uncomment the critical_* lines.
+
+[segments.context]
+color          = "blue"
+warn_color     = "maroon"
+warn_threshold = 80       # percent — switches to warn_color at or above this value
+
+# critical_color     = "red"   # requires a "red" entry in [palette]
+# critical_threshold = 95      # percent — switches to critical_color at or above this
+
+# Block bar appearance
+bar_width  = 10    # number of characters wide
+bar_filled = "█"   # U+2588 FULL BLOCK
+bar_empty  = "░"   # U+2591 LIGHT SHADE
+
+# ─── Palette ──────────────────────────────────────────────────────────────────
+# RGB values for each named color. Defaults are Catppuccin Frappe.
+# Override individual entries here — you don't need to redeclare the full table.
+# Any color name used in a segment's \`color\` field must be defined here.
+#
+# To reference Catppuccin variants:
+#   Latte:     https://github.com/catppuccin/catppuccin#latte
+#   Frappe:    https://github.com/catppuccin/catppuccin#frappe  (default)
+#   Macchiato: https://github.com/catppuccin/catppuccin#macchiato
+#   Mocha:     https://github.com/catppuccin/catppuccin#mocha
+
+[palette]
+mauve  = [202, 158, 230]  # #CA9EE6
+peach  = [239, 159, 118]  # #EF9F76
+yellow = [229, 200, 144]  # #E5C890
+green  = [166, 209, 137]  # #A6D189
+blue   = [137, 180, 250]  # #89B4FA
+pink   = [244, 184, 228]  # #F4B8E4
+maroon = [234, 153, 156]  # #EA999C
+base   = [ 48,  52,  70]  # #303446 — segment background
+crust  = [ 35,  38,  52]  # #232634 — text on segments (dark)
+`;
+
+// ─── Config commands ──────────────────────────────────────────────────────────
+
+async function handleConfigCommand(subArgs: string[]): Promise<void> {
+  const sub = subArgs[0];
+
+  if (sub === "init") {
+    const configDir = getConfigDir();
+    const configPath = getConfigPath();
+    const file = Bun.file(configPath);
+
+    if (await file.exists()) {
+      process.stderr.write(`config already exists: ${configPath}\n`);
+      process.exit(1);
+    }
+
+    // Ensure the directory exists
+    const { mkdir } = await import("node:fs/promises");
+    await mkdir(configDir, { recursive: true });
+
+    await Bun.write(configPath, REFERENCE_CONFIG);
+    process.stdout.write(`created ${configPath}\n`);
+    process.exit(0);
+  }
+
+  // Default: print resolved config as TOML
+  const config = await loadConfig();
+  process.stdout.write(stringifyToml(config as unknown as Record<string, unknown>) + "\n");
+  process.exit(0);
+}
 
 async function main() {
   const args = process.argv.slice(2);
@@ -877,6 +1062,12 @@ async function main() {
   if (hasFlag("-h", "--help")) {
     process.stdout.write(HELP_TEXT);
     process.exit(0);
+  }
+
+  // Handle `config` command (and `config init` subcommand)
+  if (args[0] === "config") {
+    await handleConfigCommand(args.slice(1));
+    return;
   }
 
   const capture = hasFlag("-c", "--capture");

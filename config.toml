@@ -1,5 +1,5 @@
-# Claude Code statusline configuration
-# Location: ~/.claude/statusline.toml
+# Winline configuration
+# Location: $XDG_CONFIG_HOME/winline/config.toml (or ~/.config/winline/config.toml)
 #
 # All values shown are defaults. The file is optional — omitting it (or any
 # section) falls back to these defaults. Partial configs work: only override
@@ -9,7 +9,7 @@
 
 [general]
 # How long (in seconds) to reuse cached subprocess results before re-running.
-# Cached: git branch, git status, worktree list/markers/icons, starship modules.
+# Cached: git branch, git status, worktree markers, starship modules.
 # Not cached: stdin context JSON (always fresh), ANSI rendering (pure).
 cache_ttl_seconds = 5
 
@@ -33,26 +33,12 @@ cache_ttl_seconds = 5
 #   straight  — │ (vertical bar)
 #   none      — no separator glyph (space only / no end caps)
 
-# [[layout.rows]]
-# style           = "background"
-# separator       = "powerline"
-# first_separator = "powerline"
-# last_separator  = "powerline"
-# segments        = ["model", "directory", "git", "worktrees", "languages", "context"]
-
 [[layout.rows]]
-style           = "background"
-separator       = "powerline"
-first_separator = "round"
-last_separator  = "round"
-segments        = ["model", "directory", "languages"]
-
-[[layout.rows]]
-style           = "foreground"
-separator       = "straight"
-first_separator = "none"
-last_separator  = "none"
-segments        = ["git", "worktrees", "context"]
+style = "background"
+separator = "straight"
+first_separator = "powerline"
+last_separator = "powerline"
+segments = ["model", "directory", "git", "languages", "context"]
 
 # ─── Segments ─────────────────────────────────────────────────────────────────
 # Per-segment color and option overrides. Segments not included in any
@@ -76,22 +62,19 @@ color = "peach"
 # Shows current branch name and status indicators:
 #   !  modified files     +  added files
 #   ✘  deleted files      ?  untracked files
-#   ↑N ahead of remote    ↓N behind remote  (from worktree data if available)
 #
 # colorized_status: when true, each indicator is rendered in its own color
 # (yellow !, green +, red ✘, teal ?) instead of inheriting the segment color.
 # Most useful on "foreground"-style rows where the base bg is neutral.
 
 [segments.git]
-color             = "yellow"
-colorized_status  = true
+color = "yellow"
+colorized_status = false
 
-# ── Worktrees ─────────────────────────────────────────────────────────────────
-# Shows a roster of non-current worktrees. Hidden when there is only one worktree.
-# Each entry shows a custom icon (git config wt-icon.<branch>) or the last 5
-# chars of the branch name, plus a session marker if a Claude session is active
-# on that branch (🤖 working, 💬 waiting — set by worktrunk).
-# Requires: worktrunk (wt) in PATH. Gracefully omitted if absent.
+# ── Worktrees (opt-in) ───────────────────────────────────────────────────────
+# Shows a count badge of worktrees where a Claude session is waiting on input.
+# Requires worktrunk (wt) hooks to write git config markers.
+# To enable: add "worktrees" to a layout.rows segments list.
 
 [segments.worktrees]
 color = "pink"
@@ -106,28 +89,28 @@ color = "pink"
 # To add a language, append the starship module name (e.g. "java", "swift").
 
 [segments.languages]
-color   = "green"
+color = "green"
 modules = ["python", "nodejs", "bun", "deno", "golang", "rust", "ruby", "c"]
 
 # ── Context window ────────────────────────────────────────────────────────────
 # Shows cumulative token usage as a block bar + percentage.
-# Example: "███░░░░░░░ 30%"
+# Example: "███░░░░░░░ 28%"
 #
 # Color switches to warn_color once usage reaches warn_threshold percent.
 # To add a critical tier (e.g. red at 95%), uncomment the critical_* lines.
 
 [segments.context]
-color          = "blue"
-warn_color     = "maroon"
-warn_threshold = 80       # percent — switches to warn_color at or above this value
+color = "blue"
+warn_color = "maroon"
+warn_threshold = 80   # percent — switches to warn_color at or above this value
 
 # critical_color     = "red"   # requires a "red" entry in [palette]
 # critical_threshold = 95      # percent — switches to critical_color at or above this
 
 # Block bar appearance
-bar_width  = 10    # number of characters wide
-bar_filled = "█"   # U+2588 FULL BLOCK
-bar_empty  = "░"   # U+2591 LIGHT SHADE
+bar_width = 10   # number of characters wide
+bar_filled = "█" # U+2588 FULL BLOCK
+bar_empty = "░"  # U+2591 LIGHT SHADE
 
 # ─── Palette ──────────────────────────────────────────────────────────────────
 # RGB values for each named color. Defaults are Catppuccin Frappe.
@@ -141,12 +124,12 @@ bar_empty  = "░"   # U+2591 LIGHT SHADE
 #   Mocha:     https://github.com/catppuccin/catppuccin#mocha
 
 [palette]
-mauve  = [202, 158, 230]  # #CA9EE6
-peach  = [239, 159, 118]  # #EF9F76
-yellow = [229, 200, 144]  # #E5C890
-green  = [166, 209, 137]  # #A6D189
-blue   = [137, 180, 250]  # #89B4FA
-pink   = [244, 184, 228]  # #F4B8E4
-maroon = [234, 153, 156]  # #EA999C
-base   = [ 48,  52,  70]  # #303446 — segment background
-crust  = [ 35,  38,  52]  # #232634 — text on segments (dark)
+mauve = [202, 158, 230]  # #CA9EE6
+peach = [239, 159, 118]  # #EF9F76
+yellow = [229, 200, 144] # #E5C890
+green = [166, 209, 137]  # #A6D189
+blue = [137, 180, 250]   # #89B4FA
+pink = [244, 184, 228]   # #F4B8E4
+maroon = [234, 153, 156] # #EA999C
+base = [48, 52, 70]      # #303446 — segment background
+crust = [35, 38, 52]     # #232634 — text on segments (dark)
